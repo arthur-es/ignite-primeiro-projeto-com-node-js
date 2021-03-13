@@ -1,31 +1,33 @@
 const express = require("express");
+const { v4: uuidv4 } = require("uuid");
 
 const app = express();
 
 app.use(express.json());
 
-app.get("/courses", (req, res) => {
-  const query = req.query;
-  console.log(query);
-  return res.json(["Curso 1", "Curso 2", "Curso 3"]);
-});
+const customers = [];
 
-app.post("/courses", (req, res) => {
-  console.log(req.body);
-  return res.json(["Curso 1", "Curso 2", "Curso 3"]);
-});
+app.post("/account", (req, res) => {
+  const { name, cpf } = req.body;
 
-app.put("/courses/:id", (req, res) => {
-  const { id } = req.params;
-  return res.json(id);
-});
+  const customerAlreadyExists = customers.some(
+    (customer) => customer.cpf === cpf
+  );
 
-app.patch("/courses/:id", (req, res) => {
-  return res.json(["Curso 1", "Curso 2", "Curso 3"]);
-});
+  if (customerAlreadyExists) {
+    return res.status(400).json({
+      error: "CPF already registered.",
+    });
+  }
 
-app.delete("/courses/:id", (req, res) => {
-  return res.json(["Curso 1", "Curso 2", "Curso 3"]);
+  customers.push({
+    id: uuidv4(),
+    name,
+    cpf,
+    statement: [],
+  });
+
+  return res.status(201).json(customers);
 });
 
 app.listen(3333);
