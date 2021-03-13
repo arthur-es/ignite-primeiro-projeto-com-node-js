@@ -23,6 +23,18 @@ function verifyIfAccountWithGivenCPFExists(req, res, next) {
   return next();
 }
 
+function getBalance(statement) {
+  const balance = statement.reduce((acumulator, operation) => {
+    if (operation.type === "credit") {
+      return acumulator + operation.amount;
+    } else if (operation.type === "debit") {
+      return acumulator - operation.amount;
+    }
+  }, 0);
+
+  return balance;
+}
+
 app.post("/account", (req, res) => {
   const { name, cpf } = req.body;
 
@@ -59,6 +71,29 @@ app.post("/deposit", verifyIfAccountWithGivenCPFExists, (req, res) => {
   const statementOperation = {
     type: "credit",
     description,
+    amount,
+    created_at: new Date(),
+  };
+
+  customer.statement.push(statementOperation);
+
+  return res.status(201).send();
+});
+
+app.post("/withdraw", verifyIfAccountWithGivenCPFExists, (req, res) => {
+  const { customer } = req;
+  const { amount } = req.body;
+
+  const balance = getBalance(customer.statement);
+
+  if (amount > balance) {
+    return res
+      .status(401)
+      .json({ error: `You don't have enougth money to withdraw ${amount}.` });
+  }
+
+  const statementOperation = {
+    type: "debit",
     amount,
     created_at: new Date(),
   };
