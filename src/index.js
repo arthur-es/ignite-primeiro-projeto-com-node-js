@@ -147,4 +147,12 @@ app.post("/withdraw", verifyIfAccountWithGivenCPFExists, (req, res) => {
   return res.status(201).send();
 });
 
+app.get("/balance", verifyIfAccountWithGivenCPFExists, (req, res) => {
+  const { customer } = req;
+
+  const balance = getBalance(customer.statement);
+
+  return res.status(200).json(balance);
+});
+
 app.listen(3333);
