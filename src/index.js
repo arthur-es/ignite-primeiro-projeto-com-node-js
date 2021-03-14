@@ -58,6 +58,21 @@ app.post("/account", (req, res) => {
   return res.status(201).json(customers);
 });
 
+app.put("/account", verifyIfAccountWithGivenCPFExists, (req, res) => {
+  const { customer } = req;
+  const { name } = req.body;
+
+  customer.name = name;
+
+  return res.status(201).send();
+});
+
+app.get("/account", verifyIfAccountWithGivenCPFExists, (req, res) => {
+  const { customer } = req;
+
+  return res.status(200).json(customer);
+});
+
 app.get("/statement", verifyIfAccountWithGivenCPFExists, (req, res) => {
   const { customer } = req;
 
