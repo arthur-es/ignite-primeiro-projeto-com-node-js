@@ -61,7 +61,28 @@ app.post("/account", (req, res) => {
 app.get("/statement", verifyIfAccountWithGivenCPFExists, (req, res) => {
   const { customer } = req;
 
-  return res.status(200).json(customer);
+  return res.status(200).json(customer.statement);
+});
+
+app.get("/statement/date", verifyIfAccountWithGivenCPFExists, (req, res) => {
+  const { customer } = req;
+  const { date } = req.query;
+
+  const dateFormat = new Date(date + " 00:00").toDateString();
+
+  const statement = customer.statement.filter((statement) => {
+    const statementDate = statement.created_at.toDateString();
+
+    return statementDate === dateFormat;
+  });
+
+  if (statement.length === 0) {
+    return res
+      .status(404)
+      .json({ error: `Could not find any statements for date ${dateFormat}` });
+  }
+
+  return res.status(200).json(statement);
 });
 
 app.post("/deposit", verifyIfAccountWithGivenCPFExists, (req, res) => {
